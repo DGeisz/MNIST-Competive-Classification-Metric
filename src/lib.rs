@@ -11,11 +11,11 @@ pub trait MnistNeuron {
 }
 
 pub trait MnistNetwork {
-    fn get_neurons(&self) -> &mut Vec<Box<dyn MnistNeuron>>;
+    fn get_neurons(&mut self) -> &mut Vec<Box<dyn MnistNeuron>>;
 
     /// Takes the vector of all images, and the index of the image
     /// you want to load
-    fn load_img(&self, img_vec: &Vec<f32>, img_i: usize) {
+    fn load_img(&mut self, img_vec: &Vec<f32>, img_i: usize) {
         for j in 0..MNIST_SIDE {
             for i in 0..MNIST_SIDE {
                 let val_i =
@@ -45,12 +45,12 @@ pub trait MnistNetwork {
         }
     }
 
-    fn perform_adjustment(&self);
+    fn perform_adjustment(&mut self);
 
     /// Returns the accuracy of current network in classifying
     /// mnist using competitive prototypes
     fn take_metric(
-        &self,
+        &mut self,
         train_img_vec: Vec<f32>,
         train_lbl_vec: Vec<u8>,
         train_epochs: usize,
