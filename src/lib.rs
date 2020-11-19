@@ -1,5 +1,5 @@
-const MNIST_SIDE: usize = 28;
-const MNIST_AREA: usize = MNIST_SIDE * MNIST_SIDE;
+pub const MNIST_SIDE: usize = 28;
+pub const MNIST_AREA: usize = MNIST_SIDE * MNIST_SIDE;
 
 pub trait MnistNeuron {
     fn load_val(&mut self, x: usize, y: usize, val: f32);
@@ -11,7 +11,7 @@ pub trait MnistNeuron {
 }
 
 pub trait MnistNetwork {
-    fn get_neurons(&self) -> Vec<Box<dyn MnistNeuron>>;
+    fn get_neurons(&self) -> &mut Vec<Box<dyn MnistNeuron>>;
 
     /// Takes the vector of all images, and the index of the image
     /// you want to load
@@ -28,7 +28,7 @@ pub trait MnistNetwork {
 
                 let &val = img_vec.get(val_i).unwrap();
 
-                for mut neuron in self.get_neurons() {
+                for neuron in self.get_neurons().iter_mut() {
                     neuron.load_val(i, j, val);
 
                     if codexc_log::run(3) {
