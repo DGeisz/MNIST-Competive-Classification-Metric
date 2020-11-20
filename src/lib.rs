@@ -4,7 +4,6 @@ pub const MNIST_SIDE: usize = 28;
 pub const MNIST_AREA: usize = MNIST_SIDE * MNIST_SIDE;
 
 pub trait MnistNeuron {
-    fn load_val(&self, x: usize, y: usize, val: f32);
     fn get_name(&self) -> String;
 
     /// This is the value the neuron outputs in response
@@ -14,6 +13,7 @@ pub trait MnistNeuron {
 
 pub trait MnistNetwork {
     fn get_neurons(&self) -> Vec<Rc<dyn MnistNeuron>>;
+    fn load_val(&self, x: usize, y: usize, val: f32);
 
     /// Takes the vector of all images, and the index of the image
     /// you want to load
@@ -30,19 +30,7 @@ pub trait MnistNetwork {
 
                 let &val = img_vec.get(val_i).unwrap();
 
-                for neuron in self.get_neurons().iter() {
-                    neuron.load_val(i, j, val);
-
-                    if codexc_log::run(5) {
-                        println!(
-                            "Loaded value {} in {} at position x={}, y={}",
-                            val,
-                            neuron.get_name(),
-                            i,
-                            j
-                        );
-                    }
-                }
+                self.load_val(i, j, val);
             }
         }
     }
@@ -58,6 +46,7 @@ pub trait MnistNetwork {
         train_epochs: usize,
         test_img_vec: Vec<f32>,
         test_lbl_vec: Vec<u8>,
+        logger_on: bool
     ) -> f32 {
         // Train the network
         let train_len = train_lbl_vec.len();
@@ -68,17 +57,19 @@ pub trait MnistNetwork {
                 self.perform_adjustment();
 
                 // Log the boi
-                if codexc_log::run(2) {
-                    if img_i % 100 == 0 {
-                        println!("Trained on img: {}", img_i);
-                    }
-                } else if codexc_log::run(1) {
-                    if img_i % 1000 == 0 {
-                        println!("Trained on img: {}", img_i);
-                    }
-                } else if codexc_log::run(0) {
-                    if img_i % 10000 == 0 {
-                        println!("Trained on img: {}", img_i);
+                if logger_on {
+                    if codexc_log::run(2) {
+                        if img_i % 100 == 0 {
+                            println!("Trained on img: {}", img_i);
+                        }
+                    } else if codexc_log::run(1) {
+                        if img_i % 1000 == 0 {
+                            println!("Trained on img: {}", img_i);
+                        }
+                    } else if codexc_log::run(0) {
+                        if img_i % 10000 == 0 {
+                            println!("Trained on img: {}", img_i);
+                        }
                     }
                 }
             }
@@ -117,17 +108,19 @@ pub trait MnistNetwork {
             class_total_wins[lbl as usize] += 1.0;
 
             // Log the boi
-            if codexc_log::run(2) {
-                if img_i % 100 == 0 {
-                    println!("Created classification for img: {}", img_i);
-                }
-            } else if codexc_log::run(1) {
-                if img_i % 1000 == 0 {
-                    println!("Created classification for img: {}", img_i);
-                }
-            } else if codexc_log::run(0) {
-                if img_i % 10000 == 0 {
-                    println!("Created classification for img: {}", img_i);
+            if logger_on {
+                if codexc_log::run(2) {
+                    if img_i % 100 == 0 {
+                        println!("Created classification for img: {}", img_i);
+                    }
+                } else if codexc_log::run(1) {
+                    if img_i % 1000 == 0 {
+                        println!("Created classification for img: {}", img_i);
+                    }
+                } else if codexc_log::run(0) {
+                    if img_i % 10000 == 0 {
+                        println!("Created classification for img: {}", img_i);
+                    }
                 }
             }
         }
@@ -173,17 +166,19 @@ pub trait MnistNetwork {
             }
 
             // Log the boi
-            if codexc_log::run(2) {
-                if img_i % 100 == 0 {
-                    println!("Classified img: {}", img_i);
-                }
-            } else if codexc_log::run(1) {
-                if img_i % 1000 == 0 {
-                    println!("Classified img: {}", img_i);
-                }
-            } else if codexc_log::run(0) {
-                if img_i % 10000 == 0 {
-                    println!("Classified img: {}", img_i);
+            if logger_on {
+                if codexc_log::run(2) {
+                    if img_i % 100 == 0 {
+                        println!("Classified img: {}", img_i);
+                    }
+                } else if codexc_log::run(1) {
+                    if img_i % 1000 == 0 {
+                        println!("Classified img: {}", img_i);
+                    }
+                } else if codexc_log::run(0) {
+                    if img_i % 10000 == 0 {
+                        println!("Classified img: {}", img_i);
+                    }
                 }
             }
         }
