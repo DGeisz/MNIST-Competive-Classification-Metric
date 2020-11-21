@@ -76,36 +76,24 @@ pub trait MnistNetwork {
         }
 
         // Create classifier
-        let mut neuron_class_wins: Vec<[f32; 10]> =
-            (0..self.get_neurons().len()).map(|_| [0.0; 10]).collect();
-        let mut class_total_wins = [0.0_f32; 10];
+        // let mut neuron_class_wins: Vec<[f32; 10]> =
+        //     (0..self.get_neurons().len()).map(|_| [0.0; 10]).collect();
+        // let mut class_total_wins = [0.0_f32; 10];
+
+
+        let mut activation_vec =
+            (0..self.get_neurons().len()).map(|_| [0.0; 10]).collect::<Vec<[f32; 10]>>();
+        let mut total_activations = [0.0_f32; 10];
+
 
         for (img_i, &lbl) in train_lbl_vec.iter().enumerate() {
             self.load_img(&train_img_vec, img_i);
 
-            let em_vec = self
-                .get_neurons()
-                .iter()
-                .map(|neuron| neuron.compute_em())
-                .collect::<Vec<f32>>();
-
-            let mut max_em = 0.0;
-            let mut max_em_i = 0;
-
-            // Find the max index
-            for (i, &em) in em_vec.iter().enumerate() {
-                if em > max_em {
-                    max_em = em;
-                    max_em_i = i;
-                }
+            for (neuron, neuron_activation) in self.get_neurons().iter().zip(activation_vec.iter_mut()) {
+                let em = neuron.compute_em();
+                neuron_activation[lbl as usize] += em;
+                total_activations[lbl as usize] += em;
             }
-
-            // Uptick win for max neuron in proper classification type
-            let max_class = neuron_class_wins.get_mut(max_em_i).unwrap();
-            max_class[lbl as usize] += 1.0;
-
-            // Uptick total wins
-            class_total_wins[lbl as usize] += 1.0;
 
             // Log the boi
             if logger_on {
@@ -125,27 +113,32 @@ pub trait MnistNetwork {
             }
         }
 
+        println!("{:?}", activation_vec);
+        println!("{:?}", total_activations);
+
         // Test model on test data
         let mut total_correct = 0;
+
+        let mut oops = [0; 10];
 
         for (img_i, &lbl) in test_lbl_vec.iter().enumerate() {
             self.load_img(&test_img_vec, img_i);
 
             let mut weighted_classification_vec = [0.0_f32; 10];
 
-            for (neuron, neuron_wins) in self.get_neurons().iter().zip(neuron_class_wins.iter_mut())
+            for (neuron, neuron_activations) in self.get_neurons().iter().zip(activation_vec.iter())
             {
                 let em = neuron.compute_em();
 
                 for i in 0..10 {
-                    weighted_classification_vec[i] += neuron_wins[i] * em;
+                    weighted_classification_vec[i] += neuron_activations[i] * em;
                 }
             }
 
             let mut classification_vec = [0.0_f32; 10];
 
             for i in 0..10 {
-                classification_vec[i] = weighted_classification_vec[i] / class_total_wins[i];
+                classification_vec[i] = weighted_classification_vec[i] / total_activations[i];
             }
 
             let mut max_val = 0.0;
@@ -163,6 +156,8 @@ pub trait MnistNetwork {
             // Check classification
             if max_i == lbl as usize {
                 total_correct += 1;
+            } else {
+                oops[lbl as usize] += 1;
             }
 
             // Log the boi
@@ -182,6 +177,8 @@ pub trait MnistNetwork {
                 }
             }
         }
+
+        println!("Oopsies! {:?}", oops);
 
         return total_correct as f32 / test_lbl_vec.len() as f32;
     }
