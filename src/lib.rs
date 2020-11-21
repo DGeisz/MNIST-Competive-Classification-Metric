@@ -121,6 +121,8 @@ pub trait MnistNetwork {
 
         let mut oops = [0; 10];
 
+        let mut mis_class = [[0; 10]; 10];
+
         for (img_i, &lbl) in test_lbl_vec.iter().enumerate() {
             self.load_img(&test_img_vec, img_i);
 
@@ -153,11 +155,19 @@ pub trait MnistNetwork {
                 }
             }
 
+            // for i in 0..10 {
+            //     if weighted_classification_vec[i] > max_val {
+            //         max_i = i;
+            //         max_val = weighted_classification_vec[i];
+            //     }
+            // }
+
             // Check classification
             if max_i == lbl as usize {
                 total_correct += 1;
             } else {
                 oops[lbl as usize] += 1;
+                mis_class[lbl as usize][max_i] += 1;
             }
 
             // Log the boi
@@ -179,6 +189,12 @@ pub trait MnistNetwork {
         }
 
         println!("Oopsies! {:?}", oops);
+        // println!("Mis class: {:?}", mis_class);
+
+        for (i, class) in mis_class.iter().enumerate() {
+            println!("mis class for {}, \n {:?} \n\n", i, class);
+        }
+
 
         return total_correct as f32 / test_lbl_vec.len() as f32;
     }
